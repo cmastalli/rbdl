@@ -1,0 +1,32 @@
+PROJECT (ABA)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake )
+
+INCLUDE_DIRECTORIES ( 
+	src/
+)
+
+SET_TARGET_PROPERTIES ( ${PROJECT_EXECUTABLES} PROPERTIES
+		LINKER_LANGUAGE CXX
+	)
+
+ADD_SUBDIRECTORY ( tests )
+ADD_SUBDIRECTORY ( gui )
+
+ADD_LIBRARY ( aba 
+	src/mathutils.cc
+	src/Logging.cc
+	src/Body.cc
+	src/Joint.cc
+	src/Model.cc
+	src/Kinematics.cc
+	src/Dynamics.cc
+	)
+
+OPTION (ENABLE_LOGGING "Enable logging (major impact on performance!)" OFF)
+
+IF ( ENABLE_LOGGING )
+	SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_LOGGING" )
+ENDIF ( ENABLE_LOGGING )
