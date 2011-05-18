@@ -1,0 +1,70 @@
+PROJECT (RBDL)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake )
+
+INCLUDE_DIRECTORIES ( 
+	src/
+)
+
+SET_TARGET_PROPERTIES ( ${PROJECT_EXECUTABLES} PROPERTIES
+		LINKER_LANGUAGE CXX
+	)
+
+# Perform the proper linking
+SET (CMAKE_SKIP_BUILD_RPATH FALSE)
+SET (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+SET (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Options
+OPTION (ENABLE_LOGGING "Enable logging (warning: major impact on performance!)" OFF)
+OPTION (BUILD_STATIC "Build the statically linked library" OFF)
+OPTION (BUILD_GUI "Build the (rudimentary) graphical user interface" OFF)
+OPTION (BUILD_TESTS "Build the test executables" OFF)
+
+SET ( RBDL_SOURCES 
+	src/mathutils.cc
+	src/Logging.cc
+	src/Body.cc
+	src/Joint.cc
+	src/Model.cc
+	src/Kinematics.cc
+	src/Dynamics.cc
+	)
+
+ADD_LIBRARY ( rbdl SHARED ${RBDL_SOURCES} )
+
+# Option dependend build information
+IF ( ENABLE_LOGGING )
+	SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_LOGGING" )
+ENDIF ( ENABLE_LOGGING )
+
+IF (BUILD_STATIC)
+  ADD_LIBRARY ( rbdl-static STATIC ${RBDL_SOURCES} )
+  SET_TARGET_PROPERTIES ( rbdl-static PROPERTIES PREFIX "lib")
+  SET_TARGET_PROPERTIES ( rbdl-static PROPERTIES OUTPUT_NAME "rbdl")
+
+	INSTALL (TARGETS rbdl-static
+	  LIBRARY DESTINATION lib
+  	ARCHIVE DESTINATION lib
+	)
+ENDIF (BUILD_STATIC)
+
+IF (BUILD_TESTS)
+  ADD_SUBDIRECTORY ( tests )
+ENDIF (BUILD_TESTS)
+
+IF (BUILD_GUI)
+  ADD_SUBDIRECTORY ( gui )
+ENDIF (BUILD_GUI)
+
+# Installing
+INSTALL (TARGETS rbdl
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	)
+
+FILE ( GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h" )
+INSTALL ( FILES ${headers} DESTINATION include/rbdl )
